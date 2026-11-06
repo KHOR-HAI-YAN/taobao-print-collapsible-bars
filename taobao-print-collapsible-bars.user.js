@@ -1,12 +1,12 @@
 // ==UserScript==
 // @name         淘宝打单工具 - 折叠边栏与顶部栏
 // @namespace    local.taobao-print
-// @version      1.2.9
+// @version      1.3.0
 // @description  直接折叠打单页的左侧两级菜单、顶部栏和横幅。
 // @match        https://myseller.taobao.com/home.htm*
 // @downloadURL  https://raw.githubusercontent.com/KHOR-HAI-YAN/taobao-print-collapsible-bars/main/taobao-print-collapsible-bars.user.js
 // @updateURL    https://raw.githubusercontent.com/KHOR-HAI-YAN/taobao-print-collapsible-bars/main/taobao-print-collapsible-bars.user.js
-// @grant        none
+// @grant        GM_setClipboard
 // @noframes
 // ==/UserScript==
 
@@ -77,7 +77,7 @@
     for (const bar of bars) {
         bar.button = document.createElement('button');
         bar.button.type = 'button';
-        bar.button.title = '淘宝打单工具 v1.2.9';
+        bar.button.title = '淘宝打单工具 v1.3.0';
         bar.button.addEventListener('click', () => {
             if (!onPrintPage()) return;
             root.toggleAttribute(bar.attribute);
@@ -86,6 +86,75 @@
         });
         ui.append(bar.button);
         updateButton(bar);
+    }
+
+    const diagnosticButton = document.createElement('button');
+    diagnosticButton.type = 'button';
+    diagnosticButton.textContent = '复制布局诊断';
+    diagnosticButton.addEventListener('click', () => {
+        if (!onPrintPage()) return;
+
+        const inner = document.getElementById('qn-workbench-inner-container');
+        const order = document.getElementById('cx-qn-order-container');
+        const shell = document.getElementById('icestark-container');
+        const matchedRules = Array.from(styles.sheet?.cssRules || [], rule => {
+            const selector = rule.selectorText;
+            // Remove the collapsed-state gates to check matches even when expanded.
+            const ungated = selector.replace(/html\[data-tp-hide-[\w-]+\]\s+/g, '');
+            const matches = document.querySelectorAll(ungated);
+            return {
+                selector,
+                count: matches.length,
+                elements: Array.from(matches).slice(0, 4).map(measure)
+            };
+        });
+
+        GM_setClipboard(JSON.stringify({
+            scriptVersion: '1.3.0',
+            viewport: [root.clientWidth, root.clientHeight],
+            collapsed: Object.fromEntries(bars.map(bar => [bar.name, root.hasAttribute(bar.attribute)])),
+            matchedRules,
+            workspace: ancestors(inner),
+            order: ancestors(order),
+            tabs: ancestors(order?.querySelector('[role="menubar"], [role="tablist"]')),
+            form: ancestors(order?.querySelector('textarea, form')),
+            shellCandidates: Array.from(shell?.children || []).slice(0, 12).map(element => ({
+                ...measure(element),
+                children: Array.from(element.children).slice(0, 12).map(measure)
+            })),
+            orderCandidates: Array.from(order?.children || []).slice(0, 12).map(measure)
+        }, null, 2), 'text');
+        diagnosticButton.textContent = '已复制布局诊断';
+    });
+    ui.append(diagnosticButton);
+
+    function measure(element) {
+        const rect = element.getBoundingClientRect();
+        const css = getComputedStyle(element);
+        return {
+            tag: element.localName,
+            id: element.id || null,
+            classes: Array.from(element.classList),
+            rect: [rect.x, rect.y, rect.width, rect.height].map(Math.round),
+            display: css.display,
+            position: css.position,
+            margin: css.margin,
+            padding: css.padding,
+            minWidth: css.minWidth,
+            maxWidth: css.maxWidth,
+            overflow: css.overflow,
+            boxSizing: css.boxSizing,
+            justifyContent: css.justifyContent
+        };
+    }
+
+    function ancestors(element) {
+        const chain = [];
+        while (element && chain.length < 16) {
+            chain.push(measure(element));
+            element = element.parentElement;
+        }
+        return chain;
     }
 
     let topPadding;
