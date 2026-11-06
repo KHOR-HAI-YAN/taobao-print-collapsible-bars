@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         淘宝打单页顶部留白诊断
 // @namespace    local.taobao-print.diagnostics
-// @version      1.0.0
+// @version      1.1.0
 // @match        https://myseller.taobao.com/home.htm*
 // @grant        GM_setClipboard
 // @noframes
@@ -26,7 +26,20 @@
         return {
             id: element.id || null,
             className: element.getAttribute('class'),
+            x: Math.round(rect.x),
+            right: Math.round(rect.right),
+            width: Math.round(rect.width),
             y: Math.round(rect.y),
+            paddingLeft: css.paddingLeft,
+            paddingRight: css.paddingRight,
+            marginLeft: css.marginLeft,
+            marginRight: css.marginRight,
+            widthStyle: css.width,
+            minWidth: css.minWidth,
+            maxWidth: css.maxWidth,
+            boxSizing: css.boxSizing,
+            justifyContent: css.justifyContent,
+            overflowX: css.overflowX,
             height: Math.round(rect.height),
             display: css.display,
             position: css.position,
@@ -39,12 +52,30 @@
     }
 
     button.addEventListener('click', () => {
-        const workbench = document.getElementById('qn-workbench-container');
+        const inner = document.getElementById('qn-workbench-inner-container');
+        const workbench = inner?.parentElement;
+        const order = document.getElementById('cx-qn-order-container');
+
+        function ancestors(element) {
+            const chain = [];
+            while (element && chain.length < 16) {
+                chain.push(measure(element));
+                element = element.parentElement;
+            }
+            return chain;
+        }
         const header = document.querySelector(
             '#icestark-container > div[class^="container--"] > div[class^="bg--"]'
         );
 
         GM_setClipboard(JSON.stringify({
+            diagnosticVersion: '1.1.0',
+            viewportWidth: document.documentElement.clientWidth,
+            sideCollapsed: document.documentElement.hasAttribute('data-tp-hide-side'),
+            bannersCollapsed: document.documentElement.hasAttribute('data-tp-hide-banners'),
+            orderAncestors: ancestors(order || inner),
+            orderTabsAncestors: ancestors(order?.querySelector('[role="menubar"], [role="tablist"]')),
+            formAncestors: ancestors(order?.querySelector('textarea, form')),
             topCollapsed: document.documentElement.hasAttribute('data-tp-hide-top'),
             header: measure(header),
             headerWrapper: measure(header?.parentElement),
