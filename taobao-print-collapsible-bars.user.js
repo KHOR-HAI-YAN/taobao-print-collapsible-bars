@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         淘宝打单工具 - 折叠边栏与顶部栏
 // @namespace    local.taobao-print
-// @version      1.4.2
+// @version      1.4.3
 // @description  直接折叠打单页的左侧两级菜单、顶部栏和横幅。
 // @match        https://myseller.taobao.com/home.htm*
 // @downloadURL  https://raw.githubusercontent.com/KHOR-HAI-YAN/taobao-print-collapsible-bars/main/taobao-print-collapsible-bars.user.js
@@ -67,6 +67,26 @@
             margin-bottom: 6px !important;
         }
 
+        #cx-qn-order-container [class*="FreeOrderEdit_form__"] .free-order-form-title {
+            margin-bottom: 8px !important;
+        }
+
+        #cx-qn-order-container [class*="FreeOrderEdit_form__"] [class*="ReceiveInfo_infoWrapper__"] {
+            padding: 10px 12px !important;
+        }
+
+        #cx-qn-order-container [class*="FreeOrderEdit_form__"] .next-radio-wrapper {
+            height: auto !important;
+            min-height: 28px !important;
+            line-height: 28px !important;
+            padding-inline: 8px !important;
+            margin-inline-end: 6px !important;
+        }
+
+        #cx-qn-order-container [class*="FreeOrderEdit_form__"] .next-form-item-control {
+            min-height: 30px !important;
+        }
+
         #cx-qn-order-container .next-form-item-label {
             padding-block: 3px !important;
         }
@@ -123,7 +143,7 @@
     for (const bar of bars) {
         bar.button = document.createElement('button');
         bar.button.type = 'button';
-        bar.button.title = '淘宝打单工具 v1.4.2';
+        bar.button.title = '淘宝打单工具 v1.4.3';
         bar.button.addEventListener('click', () => {
             if (!onPrintPage()) return;
             root.toggleAttribute(bar.attribute);
@@ -156,7 +176,7 @@
         });
 
         GM_setClipboard(JSON.stringify({
-            scriptVersion: '1.4.2',
+            scriptVersion: '1.4.3',
             viewport: [root.clientWidth, root.clientHeight],
             collapsed: Object.fromEntries(bars.map(bar => [bar.name, root.hasAttribute(bar.attribute)])),
             matchedRules,
