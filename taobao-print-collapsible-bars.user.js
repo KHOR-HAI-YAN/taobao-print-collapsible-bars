@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         淘宝打单工具 - 折叠边栏与顶部栏
 // @namespace    local.taobao-print
-// @version      1.2.1
+// @version      1.2.2
 // @description  直接折叠打单页的左侧两级菜单、顶部栏和横幅。
 // @match        https://myseller.taobao.com/home.htm*
 // @downloadURL  https://raw.githubusercontent.com/KHOR-HAI-YAN/taobao-print-collapsible-bars/main/taobao-print-collapsible-bars.user.js
@@ -30,6 +30,20 @@
         html[data-tp-hide-banners] #cx-qn-order-container > div[class^="BannerCarousel_slider_content__"],
         html[data-tp-hide-banners] #cx-qn-order-container > div[class*=" Notice_container__"] {
             display: none !important;
+        }
+
+        html[data-tp-hide-side] #qn-workbench-container {
+            left: 0 !important;
+            width: 100% !important;
+            max-width: none !important;
+            margin-left: 0 !important;
+        }
+
+        html[data-tp-hide-top] #qn-workbench-container {
+            top: 0 !important;
+            height: 100% !important;
+            max-height: none !important;
+            margin-top: 0 !important;
         }
     `;
 
