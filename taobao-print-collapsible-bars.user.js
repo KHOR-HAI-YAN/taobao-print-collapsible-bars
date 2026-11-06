@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         淘宝打单工具 - 折叠边栏与顶部栏
 // @namespace    local.taobao-print
-// @version      1.3.0
+// @version      1.4.0
 // @description  直接折叠打单页的左侧两级菜单、顶部栏和横幅。
 // @match        https://myseller.taobao.com/home.htm*
 // @downloadURL  https://raw.githubusercontent.com/KHOR-HAI-YAN/taobao-print-collapsible-bars/main/taobao-print-collapsible-bars.user.js
@@ -21,6 +21,15 @@
     });
     const ui = panel.attachShadow({ mode: 'closed' });
     ui.innerHTML = '<style>button{margin:2px;padding:6px 10px;background:white;color:#222;border:1px solid #aaa;border-radius:6px;cursor:pointer}</style>';
+
+    const drawer = document.createElement('details');
+    const handle = document.createElement('summary');
+    handle.textContent = '布局';
+    handle.style.cssText = 'cursor:pointer;background:white;border:1px solid #aaa;border-radius:6px;padding:5px 9px;width:max-content;margin-left:auto';
+    const actions = document.createElement('div');
+    actions.style.cssText = 'display:flex;flex-wrap:wrap;justify-content:flex-end;max-width:calc(100vw - 32px);background:white;border-radius:6px';
+    drawer.append(handle, actions);
+    ui.append(drawer);
 
     const styles = document.createElement('style');
     styles.textContent = `
@@ -47,6 +56,30 @@
         html[data-tp-hide-side] #qn-workbench-inner-container #icestarkNode,
         html[data-tp-hide-side] #qn-workbench-inner-container #cx-qn-order-container {
             padding-inline: 0 !important;
+        }
+
+        html[data-tp-hide-side] #qn-workbench-inner-container #cx-qn-order-container {
+            padding-inline: 12px !important;
+        }
+
+        #cx-qn-order-container .next-form-item {
+            margin-bottom: 12px !important;
+        }
+
+        #cx-qn-order-container .next-table-cell-wrapper {
+            padding-block: 6px !important;
+        }
+
+        #cx-qn-order-container .next-divider-horizontal {
+            margin-block: 12px !important;
+        }
+
+        #cx-qn-order-container > div[class^="BannerCarousel_slider_content__"] {
+            margin-top: 12px !important;
+        }
+
+        #cx-qn-order-container > div[class*=" Notice_container__"] {
+            padding-top: 10px !important;
         }
 
         html[data-tp-hide-top] #icestark-container div:has(> :is(#qn-workbench-container, #qn-worbench-container)) {
@@ -77,14 +110,14 @@
     for (const bar of bars) {
         bar.button = document.createElement('button');
         bar.button.type = 'button';
-        bar.button.title = '淘宝打单工具 v1.3.0';
+        bar.button.title = '淘宝打单工具 v1.4.0';
         bar.button.addEventListener('click', () => {
             if (!onPrintPage()) return;
             root.toggleAttribute(bar.attribute);
             syncTopPadding();
             updateButton(bar);
         });
-        ui.append(bar.button);
+        actions.append(bar.button);
         updateButton(bar);
     }
 
@@ -110,7 +143,7 @@
         });
 
         GM_setClipboard(JSON.stringify({
-            scriptVersion: '1.3.0',
+            scriptVersion: '1.4.0',
             viewport: [root.clientWidth, root.clientHeight],
             collapsed: Object.fromEntries(bars.map(bar => [bar.name, root.hasAttribute(bar.attribute)])),
             matchedRules,
@@ -126,7 +159,7 @@
         }, null, 2), 'text');
         diagnosticButton.textContent = '已复制布局诊断';
     });
-    ui.append(diagnosticButton);
+    actions.append(diagnosticButton);
 
     function measure(element) {
         const rect = element.getBoundingClientRect();
@@ -187,7 +220,15 @@
         syncTopPadding();
         if (onPrintPage()) {
             if (!styles.isConnected) document.head.append(styles);
-            if (!panel.isConnected) document.body.append(panel);
+            if (!panel.isConnected) {
+                for (const bar of bars) {
+                    root.setAttribute(bar.attribute, '');
+                    updateButton(bar);
+                }
+                drawer.open = false;
+                document.body.append(panel);
+                syncTopPadding();
+            }
         } else if (panel.isConnected || styles.isConnected) {
             for (const bar of bars) {
                 root.removeAttribute(bar.attribute);
