@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         淘宝打单工具 - 折叠边栏与顶部栏
 // @namespace    local.taobao-print
-// @version      1.2.7
+// @version      1.2.8
 // @description  直接折叠打单页的左侧两级菜单、顶部栏和横幅。
 // @match        https://myseller.taobao.com/home.htm*
 // @downloadURL  https://raw.githubusercontent.com/KHOR-HAI-YAN/taobao-print-collapsible-bars/main/taobao-print-collapsible-bars.user.js
@@ -24,15 +24,15 @@
 
     const styles = document.createElement('style');
     styles.textContent = `
-        html[data-tp-hide-top] #icestark-container > div[class^="container--"]:has(> div[class^="bg--"]):not(:has(#qn-workbench-container)),
+        html[data-tp-hide-top] #icestark-container > div[class^="container--"]:has(> div[class^="bg--"]):not(:has(:is(#qn-workbench-container, #qn-worbench-container))),
         html[data-tp-hide-side] div[class*="containerNoTab--"] > div:has(> div[class^="firstClassMenu--"]),
-        html[data-tp-hide-side] div[class*="containerNoTab--"] > div:has(div[class^="container--CA7X1Db8"] > div[class^="wrap--"]):not(:has(#qn-workbench-container)),
+        html[data-tp-hide-side] div[class*="containerNoTab--"] > div:has(div[class^="container--CA7X1Db8"] > div[class^="wrap--"]):not(:has(:is(#qn-workbench-container, #qn-worbench-container))),
         html[data-tp-hide-banners] #cx-qn-order-container > div[class^="BannerCarousel_slider_content__"],
         html[data-tp-hide-banners] #cx-qn-order-container > div[class*=" Notice_container__"] {
             display: none !important;
         }
 
-        html[data-tp-hide-side] #qn-workbench-container {
+        html[data-tp-hide-side] :is(#qn-workbench-container, #qn-worbench-container) {
             left: 0 !important;
             width: 100% !important;
             max-width: none !important;
@@ -44,13 +44,18 @@
             padding-left: 0 !important;
         }
 
-        html[data-tp-hide-top] #icestark-container div:has(> #qn-workbench-container) {
+        html[data-tp-hide-side] #qn-workbench-inner-container #icestarkNode,
+        html[data-tp-hide-side] #qn-workbench-inner-container #cx-qn-order-container {
+            padding-inline: 0 !important;
+        }
+
+        html[data-tp-hide-top] #icestark-container div:has(> :is(#qn-workbench-container, #qn-worbench-container)) {
             top: 0 !important;
             margin-top: 0 !important;
             padding-top: 0 !important;
         }
 
-        html[data-tp-hide-top] #qn-workbench-container {
+        html[data-tp-hide-top] :is(#qn-workbench-container, #qn-worbench-container) {
             top: 0 !important;
             height: 100% !important;
             max-height: none !important;
@@ -72,7 +77,7 @@
     for (const bar of bars) {
         bar.button = document.createElement('button');
         bar.button.type = 'button';
-        bar.button.title = '淘宝打单工具 v1.2.7';
+        bar.button.title = '淘宝打单工具 v1.2.8';
         bar.button.addEventListener('click', () => {
             if (!onPrintPage()) return;
             root.toggleAttribute(bar.attribute);
