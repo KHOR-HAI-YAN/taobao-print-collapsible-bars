@@ -1,8 +1,8 @@
 // ==UserScript==
 // @name         淘宝打单工具 - 折叠边栏与顶部栏
 // @namespace    local.taobao-print
-// @version      1.1.0
-// @description  直接折叠打单页的左侧两级菜单和顶部栏。
+// @version      1.2.0
+// @description  直接折叠打单页的左侧两级菜单、顶部栏和横幅。
 // @match        https://myseller.taobao.com/home.htm*
 // @downloadURL  https://raw.githubusercontent.com/KHOR-HAI-YAN/taobao-print-collapsible-bars/main/taobao-print-collapsible-bars.user.js
 // @updateURL    https://raw.githubusercontent.com/KHOR-HAI-YAN/taobao-print-collapsible-bars/main/taobao-print-collapsible-bars.user.js
@@ -26,14 +26,17 @@
     styles.textContent = `
         html[data-tp-hide-top] #icestark-container > div[class^="container--"] > div[class^="bg--"],
         html[data-tp-hide-side] div[class*="containerNoTab--"] > div:has(> div[class^="firstClassMenu--"]),
-        html[data-tp-hide-side] div[class*="containerNoTab--"] > div:has(> div[class^="container--"][data-theme-immutable-shell] > div[class^="wrap--"]) {
+        html[data-tp-hide-side] div[class*="containerNoTab--"] > div:has(> div[class^="container--"][data-theme-immutable-shell] > div[class^="wrap--"]),
+        html[data-tp-hide-banners] #cx-qn-order-container > div[class^="BannerCarousel_slider_content__"],
+        html[data-tp-hide-banners] #cx-qn-order-container > div[class*=" Notice_container__"] {
             display: none !important;
         }
     `;
 
     const bars = [
         { name: '左侧栏', attribute: 'data-tp-hide-side' },
-        { name: '顶部栏', attribute: 'data-tp-hide-top' }
+        { name: '顶部栏', attribute: 'data-tp-hide-top' },
+        { name: '横幅', attribute: 'data-tp-hide-banners' }
     ];
     function updateButton(bar) {
         const collapsed = root.hasAttribute(bar.attribute);
