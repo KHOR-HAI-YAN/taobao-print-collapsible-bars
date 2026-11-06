@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         淘宝打单工具 - 折叠边栏与顶部栏
 // @namespace    local.taobao-print
-// @version      1.4.0
+// @version      1.4.1
 // @description  直接折叠打单页的左侧两级菜单、顶部栏和横幅。
 // @match        https://myseller.taobao.com/home.htm*
 // @downloadURL  https://raw.githubusercontent.com/KHOR-HAI-YAN/taobao-print-collapsible-bars/main/taobao-print-collapsible-bars.user.js
@@ -17,15 +17,16 @@
     const onPrintPage = () => /^\/home\.htm\/qn-order(?:\/|$)/.test(location.pathname);
     const panel = document.createElement('div');
     Object.assign(panel.style, {
-        position: 'fixed', right: '12px', bottom: '12px', zIndex: '2147483647'
+        position: 'fixed', right: '0', bottom: '0', zIndex: '2147483647'
     });
     const ui = panel.attachShadow({ mode: 'closed' });
     ui.innerHTML = '<style>button{margin:2px;padding:6px 10px;background:white;color:#222;border:1px solid #aaa;border-radius:6px;cursor:pointer}</style>';
 
     const drawer = document.createElement('details');
     const handle = document.createElement('summary');
-    handle.textContent = '布局';
-    handle.style.cssText = 'cursor:pointer;background:white;border:1px solid #aaa;border-radius:6px;padding:5px 9px;width:max-content;margin-left:auto';
+    handle.setAttribute('aria-label', '展开或收起布局工具');
+    handle.title = '布局工具';
+    ui.querySelector('style').textContent += 'summary{display:grid;place-items:center;list-style:none;cursor:pointer;width:26px;height:24px;margin-left:auto;background:#fff;color:#333;border-radius:5px 0 0 0}summary::-webkit-details-marker{display:none}summary::before{content:"▴"}details[open] summary::before{content:"▾"}';
     const actions = document.createElement('div');
     actions.style.cssText = 'display:flex;flex-wrap:wrap;justify-content:flex-end;max-width:calc(100vw - 32px);background:white;border-radius:6px';
     drawer.append(handle, actions);
@@ -63,7 +64,19 @@
         }
 
         #cx-qn-order-container .next-form-item {
-            margin-bottom: 12px !important;
+            margin-bottom: 6px !important;
+        }
+
+        #cx-qn-order-container .next-form-item-label {
+            padding-block: 3px !important;
+        }
+
+        #cx-qn-order-container .next-input.next-medium:not(.next-textarea) {
+            height: 30px !important;
+        }
+
+        #cx-qn-order-container .next-input.next-medium:not(.next-textarea) > input {
+            height: 28px !important;
         }
 
         #cx-qn-order-container .next-table-cell-wrapper {
@@ -71,7 +84,7 @@
         }
 
         #cx-qn-order-container .next-divider-horizontal {
-            margin-block: 12px !important;
+            margin-block: 8px !important;
         }
 
         #cx-qn-order-container > div[class^="BannerCarousel_slider_content__"] {
@@ -110,7 +123,7 @@
     for (const bar of bars) {
         bar.button = document.createElement('button');
         bar.button.type = 'button';
-        bar.button.title = '淘宝打单工具 v1.4.0';
+        bar.button.title = '淘宝打单工具 v1.4.1';
         bar.button.addEventListener('click', () => {
             if (!onPrintPage()) return;
             root.toggleAttribute(bar.attribute);
@@ -143,7 +156,7 @@
         });
 
         GM_setClipboard(JSON.stringify({
-            scriptVersion: '1.4.0',
+            scriptVersion: '1.4.1',
             viewport: [root.clientWidth, root.clientHeight],
             collapsed: Object.fromEntries(bars.map(bar => [bar.name, root.hasAttribute(bar.attribute)])),
             matchedRules,
