@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         淘宝打单工具 - 折叠边栏与顶部栏
 // @namespace    local.taobao-print
-// @version      1.4.1
+// @version      1.4.2
 // @description  直接折叠打单页的左侧两级菜单、顶部栏和横幅。
 // @match        https://myseller.taobao.com/home.htm*
 // @downloadURL  https://raw.githubusercontent.com/KHOR-HAI-YAN/taobao-print-collapsible-bars/main/taobao-print-collapsible-bars.user.js
@@ -123,7 +123,7 @@
     for (const bar of bars) {
         bar.button = document.createElement('button');
         bar.button.type = 'button';
-        bar.button.title = '淘宝打单工具 v1.4.1';
+        bar.button.title = '淘宝打单工具 v1.4.2';
         bar.button.addEventListener('click', () => {
             if (!onPrintPage()) return;
             root.toggleAttribute(bar.attribute);
@@ -156,10 +156,11 @@
         });
 
         GM_setClipboard(JSON.stringify({
-            scriptVersion: '1.4.1',
+            scriptVersion: '1.4.2',
             viewport: [root.clientWidth, root.clientHeight],
             collapsed: Object.fromEntries(bars.map(bar => [bar.name, root.hasAttribute(bar.attribute)])),
             matchedRules,
+            controlLayout: measureControls(order || inner),
             workspace: ancestors(inner),
             order: ancestors(order),
             tabs: ancestors(order?.querySelector('[role="menubar"], [role="tablist"]')),
@@ -173,6 +174,30 @@
         diagnosticButton.textContent = '已复制布局诊断';
     });
     actions.append(diagnosticButton);
+
+    function measureControls(scope) {
+        if (!scope) return null;
+
+        const groups = {
+            fields: 'input:not([type="hidden"]), textarea, select, [role="combobox"]',
+            buttons: 'button, [role="button"]',
+            filters: '.next-form-item, [class*="Filter"]',
+            navigation: '[role="tab"], [role="menubar"], [role="tablist"]',
+            table: 'th, td, [role="columnheader"], [role="cell"]'
+        };
+        return Object.fromEntries(Object.entries(groups).map(([name, selector]) => {
+            const visible = Array.from(scope.querySelectorAll(selector))
+                .filter(element => element.getClientRects().length > 0);
+            return [name, {
+                count: visible.length,
+                samples: visible.slice(0, 8).map(element => ({
+                    control: measure(element),
+                    containers: [element.parentElement, element.parentElement?.parentElement]
+                        .filter(Boolean).map(measure)
+                }))
+            }];
+        }));
+    }
 
     function measure(element) {
         const rect = element.getBoundingClientRect();
@@ -190,6 +215,11 @@
             maxWidth: css.maxWidth,
             overflow: css.overflow,
             boxSizing: css.boxSizing,
+            fontSize: css.fontSize,
+            lineHeight: css.lineHeight,
+            minHeight: css.minHeight,
+            rowGap: css.rowGap,
+            columnGap: css.columnGap,
             justifyContent: css.justifyContent
         };
     }
