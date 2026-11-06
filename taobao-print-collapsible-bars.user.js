@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         淘宝打单工具 - 折叠边栏与顶部栏
 // @namespace    local.taobao-print
-// @version      1.2.5
+// @version      1.2.6
 // @description  直接折叠打单页的左侧两级菜单、顶部栏和横幅。
 // @match        https://myseller.taobao.com/home.htm*
 // @downloadURL  https://raw.githubusercontent.com/KHOR-HAI-YAN/taobao-print-collapsible-bars/main/taobao-print-collapsible-bars.user.js
@@ -71,7 +71,7 @@
     for (const bar of bars) {
         bar.button = document.createElement('button');
         bar.button.type = 'button';
-        bar.button.title = '淘宝打单工具 v1.2.5';
+        bar.button.title = '淘宝打单工具 v1.2.6';
         bar.button.addEventListener('click', () => {
             if (!onPrintPage()) return;
             root.toggleAttribute(bar.attribute);
@@ -85,7 +85,8 @@
     let topPadding;
     function syncTopPadding() {
         const parent = onPrintPage() && root.hasAttribute('data-tp-hide-top')
-            ? document.querySelector('#icestark-container #qn-workbench-container')?.parentElement
+            ? document.getElementById('qn-workbench-inner-container')
+                ?.closest('#icestark-container div[class*="containerNoTab--"]')
             : null;
 
         if (topPadding && topPadding.parent !== parent) {
